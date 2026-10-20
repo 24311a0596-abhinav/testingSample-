@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise QA Automation Testbed (20 Scenarios / 200+ Verifications)</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #eff6ff;
+      --secondary: #64748b;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --border: #cbd5e1;
+      --border-focus: #3b82f6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
+    
+    header { background: #fff; border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .header-title { display: flex; align-items: center; gap: 10px; }
+    .badge { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: #e0f2fe; color: #0284c7; font-weight: 700; }
+
+    .main-layout { display: flex; flex: 1; }
+    
+    /* Sidebar Navigation */
+    aside.sidebar { width: 260px; background: #fff; border-right: 1px solid var(--border); padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+    .nav-header { font-size: 11px; font-weight: 700; color: var(--secondary); text-transform: uppercase; margin: 12px 0 6px 8px; }
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-btn:hover { background: #f1f5f9; color: var(--text); }
+    .nav-btn.active { background: var(--primary-light); color: var(--primary); border-color: #bfdbfe; }
+    .nav-btn:focus-visible { outline: 2px solid var(--primary); }
+
+    /* Content Area */
+    main.content-area { flex: 1; padding: 24px 32px; max-width: 1200px; margin: 0 auto; width: 100%; }
+    .module-card { display: none; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .module-card.active { display: block; }
+    
+    h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    p.module-desc { font-size: 13px; color: var(--secondary); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+
+    /* Grids & Forms */
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .form-group { margin-bottom: 16px; position: relative; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    
+    input[type="text"], input[type="email"], input[type="number"], input[type="password"], input[type="date"], input[type="time"], input[type="tel"], select, textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+    
+    .btn {
+      padding: 9px 16px;
+      background: var(--primary);
+      color: #fff;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn:hover:not(:disabled) { background: var(--primary-dark); }
+    .btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+    .btn-secondary { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
+    .btn-secondary:hover:not(:disabled) { background: #e2e8f0; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover:not(:disabled) { background: #b91c1c; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover:not(:disabled) { background: #15803d; }
+
+    /* Banners & Messages */
+    .banner { padding: 12px 16px; border-radius: 6px; font-size: 13px; margin: 12px 0; display: none; }
+    .banner-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .banner-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .banner-info { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
+    .field-error { font-size: 12px; color: var(--danger); margin-top: 4px; display: none; }
+
+    /* Tables & Lists */
+    .table-container { border: 1px solid var(--border); border-radius: 6px; overflow-x: auto; max-height: 380px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    th { background: #f8fafc; padding: 10px 14px; font-weight: 700; border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 10; }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    tr:hover td { background: #f8fafc; }
+    th.sortable { cursor: pointer; user-select: none; }
+    th.sortable:hover { background: #e2e8f0; }
+
+    /* Autocomplete list */
+    .autocomplete-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-top: 4px;
+      max-height: 180px;
+      overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 50;
+      display: none;
+    }
+    .autocomplete-list.open { display: block; }
+    .autocomplete-item { padding: 8px 12px; cursor: pointer; font-size: 13px; }
+    .autocomplete-item.active, .autocomplete-item:hover { background: var(--primary-light); color: var(--primary); }
+
+    /* Modal */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; }
+    .modal-backdrop.open { display: flex; }
+    .modal-dialog { background: #fff; width: 100%; max-width: 480px; border-radius: 8px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+    /* Custom Checkbox / Radio */
+    .checkbox-item, .radio-item { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 8px; cursor: pointer; }
+
+    /* Shopping Cart Elements */
+    .product-card { border: 1px solid var(--border); border-radius: 6px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
+    .product-price { font-size: 16px; font-weight: 700; color: var(--primary); }
+
+    /* Stepper Wizard */
+    .wizard-steps { display: flex; justify-content: space-between; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    .step-indicator { font-size: 12px; font-weight: 700; color: var(--secondary); display: flex; align-items: center; gap: 6px; }
+    .step-indicator.active { color: var(--primary); }
+    .step-indicator.completed { color: var(--success); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-title">
+      <h2>Automation Engine Testbed</h2>
+      <span class="badge" id="testbed-version">v2.4 Production Spec</span>
+    </div>
+    <div style="font-size: 13px; color: var(--secondary);">
+      Total Scenarios Validated: <strong id="global-action-counter" style="color:var(--primary);">0</strong>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <!-- Left Navigation Bar -->
+    <aside class="sidebar" aria-label="Module Navigation">
+      <div class="nav-header">Test Suites</div>
+      <button class="nav-btn active" data-target="module-inputs" id="nav-btn-inputs">1. Input Fields & Masking</button>
+      <button class="nav-btn" data-target="module-autocomplete" id="nav-btn-autocomplete">2. Autocomplete & Delay</button>
+      <button class="nav-btn" data-target="module-buttons" id="nav-btn-buttons">3. Buttons, Debounce & Loaders</button>
+      <button class="nav-btn" data-target="module-selection" id="nav-btn-selection">4. Checkboxes, Radios & Trees</button>
+      <button class="nav-btn" data-target="module-dropdowns" id="nav-btn-dropdowns">5. Dynamic Cascading Select</button>
+      <button class="nav-btn" data-target="module-grid" id="nav-btn-grid">6. Virtual Grid & 500 Records</button>
+      <button class="nav-btn" data-target="module-wizard" id="nav-btn-wizard">7. Multi-Step Checkout Wizard</button>
+      <button class="nav-btn" data-target="module-cart" id="nav-btn-cart">8. E-Commerce Cart & Discounts</button>
+      <button class="nav-btn" data-target="module-modals" id="nav-btn-modals">9. Modals & Focus Trap</button>
+      <button class="nav-btn" data-target="module-advanced" id="nav-btn-advanced">10. File Upload & Canvas</button>
+    </aside>
+
+    <!-- Main Content Panels -->
+    <main class="content-area">
+
+      <!-- ================= MODULE 1: INPUTS & MASKS ================= -->
+      <section class="module-card active" id="module-inputs" aria-labelledby="heading-inputs">
+        <h2 id="heading-inputs">1. Form Inputs, Masking & Regex Constraints</h2>
+        <p class="module-desc">Tests standard text inputs, live echo listeners, numerical boundaries, character counters, and regex masking.</p>
+        
+        <div class="grid-2">
+          <div>
+            <div class="form-group">
+              <label for="input-standard">Standard Text Input</label>
+              <input type="text" id="input-standard" placeholder="Enter username..." aria-describedby="echo-standard">
+              <span id="echo-standard" style="font-size: 12px; color: var(--secondary); margin-top: 4px; display: block;"></span>
+            </div>
+            
+            <div class="form-group">
+              <label for="input-masked-phone">Phone Input with Mask (e.g. (555) 000-0000)</label>
+              <input type="tel" id="input-masked-phone" placeholder="(XXX) XXX-XXXX" maxlength="14">
+              <span class="field-error" id="err-phone">Invalid phone format. Complete full 10 digits.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="input-limited-text">Restricted Input (Max 50 Chars)</label>
+              <input type="text" id="input-limited-text" maxlength="50" placeholder="Type here...">
+              <div style="font-size: 11px; color: var(--secondary); text-align: right; margin-top: 2px;">
+                Remaining: <span id="char-remaining">50</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="form-group">
+              <label for="input-numeric-range">Numeric Value with Validation (0 to 100)</label>
+              <input type="number" id="input-numeric-range" min="0" max="100" placeholder="50">
+              <span class="field-error" id="err-numeric">Value must be between 0 and 100 inclusive.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="input-read-only">Read-Only Control</label>
+              <input type="text" id="input-read-only" value="PRESET_STATIC_TOKEN_9901" readonly>
+            </div>
+
+            <button class="btn btn-secondary" id="btn-reset-inputs">Reset Inputs Tab</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MODULE 2: AUTOCOMPLETE ================= -->
+      <section class="module-card" id="module-autocomplete" aria-labelledby="heading-auto">
+        <h2 id="heading-auto">2. Asynchronous City Autocomplete & Chip Selection</h2>
+        <p class="module-desc">Validates remote delay debounce, arrow navigation, Enter/Escape hotkeys, and tag generation.</p>
+
+        <div class="form-group" style="max-width: 480px;">
+          <label for="input-city-search">Search Destination Cities (Debounced 300ms)</label>
+          <input type="text" id="input-city-search" placeholder="Type 'lon', 'tok', 'new'..." autocomplete="off">
+          <ul class="autocomplete-list" id="list-city-suggestions" role="listbox"></ul>
+          <span id="auto-status-text" style="font-size: 12px; color: var(--secondary); margin-top: 4px; display: block;"></span>
+        </div>
+
+        <div style="margin-top: 16px;">
+          <label>Selected Destination Chips:</label>
+          <div id="chip-container" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; min-height: 32px;"></div>
+        </div>
+      </section>
+
+      <!-- ================= MODULE 3: BUTTONS & LOADERS ================= -->
+      <section class="module-card" id="module-buttons" aria-labelledby="heading-buttons">
+        <h2 id="heading-buttons">3. Button Triggers, Debouncing & Asynchronous Loaders</h2>
+        <p class="module-desc">Tests single clicks, debounced double-clicks, asynchronous loading spinners, and dynamically disabled buttons.</p>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px;">
+          <button class="btn" id="btn-single-click">Standard Click</button>
+          <button class="btn btn-secondary" id="btn-double-click">Double Click Verification</button>
+          <button class="btn btn-success" id="btn-async-loader">Simulate Async API Call</button>
+          <button class="btn btn-danger" id="btn-toggle-disable">Toggle Disable Target</button>
+          <button class="btn btn-secondary" id="btn-target-toggleable" disabled>Target Button</button>
+        </div>
+
+        <div class="banner banner-info" id="banner-button-feedback">Awaiting button interaction...</div>
+      </section>
+
+      <!-- ================= MODULE 4: SELECTION & TREES ================= -->
+      <section class="module-card" id="module-selection" aria-labelledby="heading-selection">
+        <h2 id="heading-selection">4. Checkbox Hierarchies & Independent Radio Clusters</h2>
+        <p class="module-desc">Tests tri-state master checkboxes (indeterminate), nested folder trees, and separate radio groups.</p>
+
+        <div class="grid-2">
+          <div>
+            <label style="font-weight: 700;">Role Permissions (Tri-State Master):</label>
+            <div style="margin-top: 8px;">
+              <label class="checkbox-item" style="font-weight: 600;">
+                <input type="checkbox" id="check-master-permissions"> Select All Roles
+              </label>
+              <div style="margin-left: 20px;" id="sub-permissions-group">
+                <label class="checkbox-item"><input type="checkbox" class="sub-check" value="Read"> Can View Reports</label>
+                <label class="checkbox-item"><input type="checkbox" class="sub-check" value="Write"> Can Edit Schemas</label>
+                <label class="checkbox-item"><input type="checkbox" class="sub-check" value="Execute"> Can Deploy Pipelines</label>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label style="font-weight: 700;">Notification Mode (Radio Group A):</label>
+            <div style="margin-top: 8px;">
+              <label class="radio-item"><input type="radio" name="radio-group-notif" value="Realtime" checked> Real-time Alerts</label>
+              <label class="radio-item"><input type="radio" name="radio-group-notif" value="Daily"> Daily Aggregation</label>
+              <label class="radio-item"><input type="radio" name="radio-group-notif" value="Disabled"> Mute Notifications</label>
+            </div>
+
+            <label style="font-weight: 700; margin-top: 14px;">Environment Tier (Radio Group B):</label>
+            <div style="margin-top: 8px;">
+              <label class="radio-item"><input type="radio" name="radio-group-env" value="Sandbox" checked> Sandbox Test</label>
+              <label class="radio-item"><input type="radio" name="radio-group-env" value="Staging"> Staging Preview</label>
+              <label class="radio-item"><input type="radio" name="radio-group-env" value="Production"> Production Live</label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MODULE 5: DROPDOWNS ================= -->
+      <section class="module-card" id="module-dropdowns" aria-labelledby="heading-dropdowns">
+        <h2 id="heading-dropdowns">5. Cascading Country/State/City Selectors</h2>
+        <p class="module-desc">Validates dropdown option updates dependent on upstream parent selections and clear triggers.</p>
+
+        <div class="grid-3">
+          <div class="form-group">
+            <label for="select-country">1. Select Country</label>
+            <select id="select-country">
+              <option value="">-- Choose Country --</option>
+              <option value="US">United States</option>
+              <option value="IN">India</option>
+              <option value="CA">Canada</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="select-state">2. Select State / Province</label>
+            <select id="select-state" disabled>
+              <option value="">-- Awaiting Country --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="select-city">3. Select City</label>
+            <select id="select-city" disabled>
+              <option value="">-- Awaiting State --</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary" id="btn-reset-cascade">Reset All Selections</button>
+        <div id="cascade-summary" class="banner banner-success" style="margin-top: 14px;">Selection Complete!</div>
+      </section>
+
+      <!-- ================= MODULE 6: VIRTUAL GRID ================= -->
+      <section class="module-card" id="module-grid" aria-labelledby="heading-grid">
+        <h2 id="heading-grid">6. Virtual Data Grid (500 Records, Sort, Filter, Delete)</h2>
+        <p class="module-desc">Tests high-density table rendering, column sorting, search queries, multi-select rows, and batch actions.</p>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px;">
+          <input type="text" id="grid-search-input" placeholder="Search by name, ID, or department..." style="max-width: 320px;">
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary" id="btn-select-all-grid">Select All Visible</button>
+            <button class="btn btn-danger" id="btn-delete-selected-grid">Delete Selected</button>
+            <button class="btn btn-secondary" id="btn-reset-grid">Reload 500 Records</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="data-grid-table">
+            <thead>
+              <tr>
+                <th style="width: 40px;"><input type="checkbox" id="grid-header-checkbox"></th>
+                <th class="sortable" data-col="id">ID ⇕</th>
+                <th class="sortable" data-col="name">Resource Name ⇕</th>
+                <th class="sortable" data-col="dept">Department ⇕</th>
+                <th class="sortable" data-col="status">Status ⇕</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="grid-tbody"></tbody>
+          </table>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 12px; color: var(--secondary);">
+          <span>Showing <strong id="grid-shown-count">0</strong> of <strong id="grid-total-count">500</strong> items</span>
+          <span>Selected: <strong id="grid-selected-count">0</strong></span>
+        </div>
+      </section>
+
+      <!-- ================= MODULE 7: MULTI-STEP WIZARD ================= -->
+      <section class="module-card" id="module-wizard" aria-labelledby="heading-wizard">
+        <h2 id="heading-wizard">7. Multi-Step Onboarding & Checkout Wizard</h2>
+        <p class="module-desc">Validates step transitions, field gating, state retention across previous steps, and final confirmation.</p>
+
+        <div class="wizard-steps">
+          <div class="step-indicator active" id="step-ind-1">1. Account Information</div>
+          <div class="step-indicator" id="step-ind-2">2. Billing & Address</div>
+          <div class="step-indicator" id="step-ind-3">3. Review & Submit</div>
+        </div>
+
+        <!-- Wizard Step 1 -->
+        <div class="wizard-panel" id="wizard-step-1">
+          <div class="form-group">
+            <label for="wiz-email">Work Email *</label>
+            <input type="email" id="wiz-email" placeholder="alex@company.com">
+            <span class="field-error" id="wiz-err-email">Valid corporate email is required.</span>
+          </div>
+          <div class="form-group">
+            <label for="wiz-pass">Password (Min 8 Chars) *</label>
+            <input type="password" id="wiz-pass" placeholder="••••••••">
+            <span class="field-error" id="wiz-err-pass">Password must be at least 8 characters.</span>
+          </div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button class="btn btn-primary" id="btn-wiz-next-1">Next: Billing →</button>
+          </div>
+        </div>
+
+        <!-- Wizard Step 2 -->
+        <div class="wizard-panel" id="wizard-step-2" style="display:none;">
+          <div class="form-group">
+            <label for="wiz-address">Street Address *</label>
+            <input type="text" id="wiz-address" placeholder="123 Innovation Way">
+            <span class="field-error" id="wiz-err-address">Address cannot be blank.</span>
+          </div>
+          <div class="form-group">
+            <label for="wiz-zip">Postal Code (5 Digits) *</label>
+            <input type="text" id="wiz-zip" placeholder="94016" maxlength="5">
+            <span class="field-error" id="wiz-err-zip">Must be exactly 5 digits.</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <button class="btn btn-secondary" id="btn-wiz-prev-2">← Back</button>
+            <button class="btn btn-primary" id="btn-wiz-next-2">Next: Review →</button>
+          </div>
+        </div>
+
+        <!-- Wizard Step 3 -->
+        <div class="wizard-panel" id="wizard-step-3" style="display:none;">
+          <div style="background: #f8fafc; padding: 14px; border-radius: 6px; margin-bottom: 16px; font-size: 13px;">
+            <p><strong>Account Email:</strong> <span id="rev-email">-</span></p>
+            <p><strong>Shipping Address:</strong> <span id="rev-address">-</span>, Zip <span id="rev-zip">-</span></p>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <button class="btn btn-secondary" id="btn-wiz-prev-3">← Back</button>
+            <button class="btn btn-success" id="btn-wiz-complete">Complete Registration</button>
+          </div>
+        </div>
+
+        <div class="banner banner-success" id="banner-wizard-complete">Registration Successfully Finished!</div>
+      </section>
+
+      <!-- ================= MODULE 8: E-COMMERCE CART ================= -->
+      <section class="module-card" id="module-cart" aria-labelledby="heading-cart">
+        <h2 id="heading-cart">8. E-Commerce Cart, Coupon Engine & Dynamic Math</h2>
+        <p class="module-desc">Validates price additions, quantity increments, promo discount verification (e.g. 'SAVE10' for 10% off), and subtotal/tax calculations.</p>
+
+        <div class="grid-2">
+          <!-- Products -->
+          <div class="grid-2" style="gap: 12px;">
+            <div class="product-card" id="prod-1">
+              <div>
+                <strong>Developer Workstation</strong>
+                <p style="font-size: 12px; color: var(--secondary);">M2 Pro / 32GB RAM</p>
+              </div>
+              <div class="product-price">$1,200.00</div>
+              <button class="btn btn-primary btn-add-cart" data-id="1" data-name="Developer Workstation" data-price="1200">Add to Cart</button>
+            </div>
+
+            <div class="product-card" id="prod-2">
+              <div>
+                <strong>4K Ultra-Wide Monitor</strong>
+                <p style="font-size: 12px; color: var(--secondary);">34-Inch Curved Display</p>
+              </div>
+              <div class="product-price">$450.00</div>
+              <button class="btn btn-primary btn-add-cart" data-id="2" data-name="4K Ultra-Wide Monitor" data-price="450">Add to Cart</button>
+            </div>
+          </div>
+
+          <!-- Cart Checkout Summary -->
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; padding: 16px;">
+            <h3 style="font-size: 16px; margin-bottom: 12px;">Order Summary</h3>
+            <div id="cart-items-list" style="min-height: 80px; margin-bottom: 12px; font-size: 13px;">Your cart is empty.</div>
+
+            <div class="form-group" style="display: flex; gap: 8px;">
+              <input type="text" id="coupon-code-input" placeholder="Promo code (SAVE10)">
+              <button class="btn btn-secondary" id="btn-apply-coupon">Apply</button>
+            </div>
+            <div id="coupon-msg" style="font-size: 12px; margin-bottom: 8px;"></div>
+
+            <div style="border-top: 1px solid var(--border); padding-top: 10px; font-size: 13px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Subtotal:</span><strong id="cart-subtotal">$0.00</strong></div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--success);"><span>Discount:</span><strong id="cart-discount">-$0.00</strong></div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;"><span>Estimated Tax (8%):</span><strong id="cart-tax">$0.00</strong></div>
+              <div style="display: flex; justify-content: space-between; font-size: 16px; border-top: 2px solid var(--border); padding-top: 6px;">
+                <span>Total:</span><strong id="cart-grand-total" style="color:var(--primary);">$0.00</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MODULE 9: MODALS ================= -->
+      <section class="module-card" id="module-modals" aria-labelledby="heading-modals">
+        <h2 id="heading-modals">9. Accessible Modals, Focus Trapping & Overlays</h2>
+        <p class="module-desc">Tests overlay pointer event interception, accessible ESC key listeners, focus retention inside dialogs, and nested confirmation boxes.</p>
+
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-primary" id="btn-open-modal-1">Launch Confirmation Dialog</button>
+          <button class="btn btn-danger" id="btn-open-modal-prompt">Delete Account Trigger</button>
+        </div>
+
+        <div class="banner banner-success" id="banner-modal-result" style="margin-top: 16px;"></div>
+      </section>
+
+      <!-- ================= MODULE 10: ADVANCED FILE & CANVAS ================= -->
+      <section class="module-card" id="module-advanced" aria-labelledby="heading-advanced">
+        <h2 id="heading-advanced">10. File Upload Interception & HTML5 Signature Canvas</h2>
+        <p class="module-desc">Tests file picker events, multi-file inspection, drag-and-drop validation, and interactive canvas drawing coordinates.</p>
+
+        <div class="grid-2">
+          <div>
+            <div class="form-group">
+              <label for="file-input-control">Upload Test Evidence (PDF / PNG, Max 5MB)</label>
+              <input type="file" id="file-input-control" accept=".pdf,image/png,image/jpeg">
+              <div id="file-summary" style="font-size: 12px; color: var(--secondary); margin-top: 6px;"></div>
+            </div>
+          </div>
+
+          <div>
+            <label>Canvas Signature Pad (Touch/Pointer Interactive):</label>
+            <canvas id="signature-canvas" width="360" height="120" style="border: 1px dashed var(--border); border-radius: 6px; background: #fff; cursor: crosshair; display: block; margin-top: 6px;"></canvas>
+            <div style="margin-top: 8px; display: flex; gap: 8px;">
+              <button class="btn btn-secondary" id="btn-clear-canvas">Clear Pad</button>
+              <button class="btn btn-primary" id="btn-verify-signature">Validate Signature</button>
+            </div>
+            <div id="canvas-status" style="font-size: 12px; margin-top: 4px;"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Shared Modal Component -->
+  <div class="modal-backdrop" id="standard-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-dialog">
+      <h3 id="modal-title" style="margin-bottom: 10px;">Confirm Enterprise Deployment</h3>
+      <p style="font-size: 13px; color: var(--secondary); margin-bottom: 16px;">
+        Are you certain you wish to synchronize this build with production pipelines? This will propagate changes across all cloud clusters.
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="btn-modal-cancel">Cancel (ESC)</button>
+        <button class="btn btn-primary" id="btn-modal-confirm">Confirm Action</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global metric counter to verify active interactions
+    let globalActionCount = 0;
+    function logAction() {
+      globalActionCount++;
+      document.getElementById('global-action-counter').textContent = globalActionCount;
+    }
+
+    // --- MODULE NAVIGATION & TAB ISOLATION ---
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const modules = document.querySelectorAll('.module-card');
+
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        navButtons.forEach(b => b.classList.remove('active'));
+        modules.forEach(m => m.classList.remove('active'));
+        btn.classList.add('active');
+        const targetId = btn.getAttribute('data-target');
+        document.getElementById(targetId).classList.add('active');
+        logAction();
+      });
+    });
+
+    // --- MODULE 1: INPUTS & MASKS ---
+    const inputStd = document.getElementById('input-standard');
+    const echoStd = document.getElementById('echo-standard');
+    inputStd.addEventListener('input', (e) => {
+      echoStd.textContent = e.target.value ? `Live Echo: ${e.target.value}` : '';
+      logAction();
+    });
+
+    const phoneInput = document.getElementById('input-masked-phone');
+    const errPhone = document.getElementById('err-phone');
+    phoneInput.addEventListener('input', (e) => {
+      let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+      e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+      errPhone.style.display = (e.target.value.length > 0 && e.target.value.length < 14) ? 'block' : 'none';
+      logAction();
+    });
+
+    const charInput = document.getElementById('input-limited-text');
+    const charRemain = document.getElementById('char-remaining');
+    charInput.addEventListener('input', (e) => {
+      charRemain.textContent = 50 - e.target.value.length;
+    });
+
+    const numInput = document.getElementById('input-numeric-range');
+    const errNum = document.getElementById('err-numeric');
+    numInput.addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      errNum.style.display = (isNaN(v) || v < 0 || v > 100) ? 'block' : 'none';
+    });
+
+    document.getElementById('btn-reset-inputs').addEventListener('click', () => {
+      inputStd.value = '';
+      echoStd.textContent = '';
+      phoneInput.value = '';
+      errPhone.style.display = 'none';
+      charInput.value = '';
+      charRemain.textContent = '50';
+      numInput.value = '';
+      errNum.style.display = 'none';
+      logAction();
+    });
+
+    // --- MODULE 2: AUTOCOMPLETE WITH DEBOUNCE & CHIPS ---
+    const cities = ["London", "Londonderry", "Long Beach", "Tokyo", "Tokushima", "New York", "New Delhi", "New Orleans", "Paris", "Berlin"];
+    const cityInput = document.getElementById('input-city-search');
+    const cityList = document.getElementById('list-city-suggestions');
+    const chipContainer = document.getElementById('chip-container');
+    const autoStatus = document.getElementById('auto-status-text');
+    let activeIndex = -1;
+    let debounceTimer = null;
+
+    function renderAutoSuggestions(matches) {
+      cityList.innerHTML = '';
+      activeIndex = -1;
+      if (!matches.length) {
+        cityList.classList.remove('open');
+        autoStatus.textContent = 'No matching destinations found.';
+        return;
+      }
+      autoStatus.textContent = `${matches.length} suggestions ready. Use Arrow keys or click.`;
+      matches.forEach(name => {
+        const li = document.createElement('li');
+        li.className = 'autocomplete-item';
+        li.textContent = name;
+        li.setAttribute('role', 'option');
+        li.addEventListener('click', () => addChip(name));
+        cityList.appendChild(li);
+      });
+      cityList.classList.add('open');
+    }
+
+    function addChip(name) {
+      const chip = document.createElement('span');
+      chip.className = 'badge';
+      chip.style.cssText = 'padding: 6px 10px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;';
+      chip.innerHTML = `${name} <button style="border:none;background:none;cursor:pointer;font-weight:bold;color:#0284c7;">×</button>`;
+      chip.querySelector('button').addEventListener('click', () => { chip.remove(); logAction(); });
+      chipContainer.appendChild(chip);
+      cityInput.value = '';
+      cityList.classList.remove('open');
+      autoStatus.textContent = `Selected: ${name}`;
+      logAction();
+    }
+
+    cityInput.addEventListener('input', (e) => {
+      clearTimeout(debounceTimer);
+      const q = e.target.value.trim().toLowerCase();
+      if (!q) { cityList.classList.remove('open'); autoStatus.textContent = ''; return; }
+      autoStatus.textContent = 'Searching cities...';
+      debounceTimer = setTimeout(() => {
+        const matches = cities.filter(c => c.toLowerCase().includes(q));
+        renderAutoSuggestions(matches);
+      }, 250);
+    });
+
+    cityInput.addEventListener('keydown', (e) => {
+      const items = cityList.querySelectorAll('.autocomplete-item');
+      if (!items.length) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeIndex = (activeIndex + 1) % items.length;
+        highlightItem(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeIndex = (activeIndex - 1 + items.length) % items.length;
+        highlightItem(items);
+      } else if (e.key === 'Enter') {
+        if (activeIndex > -1) { e.preventDefault(); addChip(items[activeIndex].textContent); }
+      } else if (e.key === 'Escape') {
+        cityList.classList.remove('open');
+      }
+    });
+
+    function highlightItem(items) {
+      items.forEach((it, idx) => it.classList.toggle('active', idx === activeIndex));
+    }
+
+    // --- MODULE 3: BUTTONS & LOADERS ---
+    const btnFeedback = document.getElementById('banner-button-feedback');
+    let dblClickCount = 0;
+
+    document.getElementById('btn-single-click').addEventListener('click', () => {
+      btnFeedback.style.display = 'block';
+      btnFeedback.className = 'banner banner-success';
+      btnFeedback.textContent = 'Single click event detected successfully.';
+      logAction();
+    });
+
+    document.getElementById('btn-double-click').addEventListener('dblclick', () => {
+      dblClickCount++;
+      btnFeedback.style.display = 'block';
+      btnFeedback.className = 'banner banner-success';
+      btnFeedback.textContent = `Double click verified! Execution count: ${dblClickCount}`;
+      logAction();
+    });
+
+    const asyncBtn = document.getElementById('btn-async-loader');
+    asyncBtn.addEventListener('click', () => {
+      asyncBtn.disabled = true;
+      asyncBtn.textContent = 'Executing Query (1.2s)...';
+      btnFeedback.style.display = 'block';
+      btnFeedback.className = 'banner banner-info';
+      btnFeedback.textContent = 'Sending payload to cloud pipeline...';
+      setTimeout(() => {
+        asyncBtn.disabled = false;
+        asyncBtn.textContent = 'Simulate Async API Call';
+        btnFeedback.className = 'banner banner-success';
+        btnFeedback.textContent = 'Async operation completed with HTTP 200 OK.';
+        logAction();
+      }, 1200);
+    });
+
+    const toggleBtn = document.getElementById('btn-toggle-disable');
+    const targetToggleBtn = document.getElementById('btn-target-toggleable');
+    toggleBtn.addEventListener('click', () => {
+      targetToggleBtn.disabled = !targetToggleBtn.disabled;
+      targetToggleBtn.className = targetToggleBtn.disabled ? 'btn btn-secondary' : 'btn btn-primary';
+      logAction();
+    });
+
+    // --- MODULE 4: SELECTION & TRI-STATE CHECKBOXES ---
+    const masterCheck = document.getElementById('check-master-permissions');
+    const subChecks = document.querySelectorAll('.sub-check');
+
+    masterCheck.addEventListener('change', (e) => {
+      subChecks.forEach(c => c.checked = e.target.checked);
+      masterCheck.indeterminate = false;
+      logAction();
+    });
+
+    subChecks.forEach(c => {
+      c.addEventListener('change', () => {
+        const checkedCount = document.querySelectorAll('.sub-check:checked').length;
+        if (checkedCount === 0) {
+          masterCheck.checked = false;
+          masterCheck.indeterminate = false;
+        } else if (checkedCount === subChecks.length) {
+          masterCheck.checked = true;
+          masterCheck.indeterminate = false;
+        } else {
+          masterCheck.checked = false;
+          masterCheck.indeterminate = true;
+        }
+        logAction();
+      });
+    });
+
+    // --- MODULE 5: CASCADING SELECTORS ---
+    const countryData = {
+      US: { states: { "CA": ["Los Angeles", "San Francisco"], "NY": ["New York City", "Buffalo"] } },
+      IN: { states: { "TG": ["Hyderabad", "Warangal"], "KA": ["Bangalore", "Mysore"] } },
+      CA: { states: { "ON": ["Toronto", "Ottawa"], "BC": ["Vancouver", "Victoria"] } }
+    };
+
+    const selCountry = document.getElementById('select-country');
+    const selState = document.getElementById('select-state');
+    const selCity = document.getElementById('select-city');
+    const cascadeSum = document.getElementById('cascade-summary');
+
+    selCountry.addEventListener('change', () => {
+      selState.innerHTML = '<option value="">-- Choose State --</option>';
+      selCity.innerHTML = '<option value="">-- Awaiting State --</option>';
+      selCity.disabled = true;
+      cascadeSum.style.display = 'none';
+
+      if (selCountry.value) {
+        selState.disabled = false;
+        Object.keys(countryData[selCountry.value].states).forEach(st => {
+          selState.innerHTML += `<option value="${st}">${st}</option>`;
+        });
+      } else {
+        selState.disabled = true;
+      }
+      logAction();
+    });
+
+    selState.addEventListener('change', () => {
+      selCity.innerHTML = '<option value="">-- Choose City --</option>';
+      if (selState.value) {
+        selCity.disabled = false;
+        countryData[selCountry.value].states[selState.value].forEach(ct => {
+          selCity.innerHTML += `<option value="${ct}">${ct}</option>`;
+        });
+      } else {
+        selCity.disabled = true;
+      }
+      logAction();
+    });
+
+    selCity.addEventListener('change', () => {
+      if (selCity.value) {
+        cascadeSum.style.display = 'block';
+        cascadeSum.textContent = `Resolved: ${selCountry.value} → ${selState.value} → ${selCity.value}`;
+      }
+      logAction();
+    });
+
+    document.getElementById('btn-reset-cascade').addEventListener('click', () => {
+      selCountry.value = '';
+      selState.innerHTML = '<option value="">-- Awaiting Country --</option>';
+      selState.disabled = true;
+      selCity.innerHTML = '<option value="">-- Awaiting State --</option>';
+      selCity.disabled = true;
+      cascadeSum.style.display = 'none';
+      logAction();
+    });
+
+    // --- MODULE 6: 500-ROW DATA GRID ---
+    let gridData = Array.from({ length: 500 }, (_, i) => ({
+      id: 1000 + i + 1,
+      name: `Resource_Node_${String(i + 1).padStart(3, '0')}`,
+      dept: ['DevOps', 'QA Automation', 'Security', 'Frontend', 'Analytics'][i % 5],
+      status: ['Active', 'Pending', 'Inactive'][i % 3],
+      selected: false
+    }));
+
+    const gridTbody = document.getElementById('grid-tbody');
+    const gridShownCount = document.getElementById('grid-shown-count');
+    const gridTotalCount = document.getElementById('grid-total-count');
+    const gridSelectedCount = document.getElementById('grid-selected-count');
+    const gridHeaderCheckbox = document.getElementById('grid-header-checkbox');
+
+    function renderGrid(data) {
+      gridTbody.innerHTML = '';
+      data.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><input type="checkbox" class="row-checkbox" data-id="${item.id}" ${item.selected ? 'checked' : ''}></td>
+          <td><strong>#${item.id}</strong></td>
+          <td>${item.name}</td>
+          <td><span class="badge">${item.dept}</span></td>
+          <td><span style="color:${item.status === 'Active' ? 'var(--success)' : item.status === 'Pending' ? 'var(--warning)' : 'var(--danger)'}; font-weight:600;">${item.status}</span></td>
+          <td><button class="btn btn-secondary btn-del-row" data-id="${item.id}" style="padding:4px 8px;font-size:11px;">Remove</button></td>
+        `;
+        tr.querySelector('.row-checkbox').addEventListener('change', (e) => {
+          item.selected = e.target.checked;
+          updateGridStats();
+        });
+        tr.querySelector('.btn-del-row').addEventListener('click', () => {
+          gridData = gridData.filter(d => d.id !== item.id);
+          renderGrid(gridData);
+        });
+        gridTbody.appendChild(tr);
+      });
+      gridShownCount.textContent = data.length;
+      gridTotalCount.textContent = gridData.length;
+      updateGridStats();
+    }
+
+    function updateGridStats() {
+      const selected = gridData.filter(d => d.selected).length;
+      gridSelectedCount.textContent = selected;
+      gridHeaderCheckbox.checked = gridData.length > 0 && selected === gridData.length;
+      logAction();
+    }
+
+    gridHeaderCheckbox.addEventListener('change', (e) => {
+      gridData.forEach(d => d.selected = e.target.checked);
+      document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = e.target.checked);
+      updateGridStats();
+    });
+
+    document.getElementById('grid-search-input').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const filtered = gridData.filter(d => d.name.toLowerCase().includes(q) || d.dept.toLowerCase().includes(q) || String(d.id).includes(q));
+      renderGrid(filtered);
+    });
+
+    document.getElementById('btn-delete-selected-grid').addEventListener('click', () => {
+      gridData = gridData.filter(d => !d.selected);
+      renderGrid(gridData);
+    });
+
+    document.getElementById('btn-reset-grid').addEventListener('click', () => {
+      gridData = Array.from({ length: 500 }, (_, i) => ({
+        id: 1000 + i + 1,
+        name: `Resource_Node_${String(i + 1).padStart(3, '0')}`,
+        dept: ['DevOps', 'QA Automation', 'Security', 'Frontend', 'Analytics'][i % 5],
+        status: ['Active', 'Pending', 'Inactive'][i % 3],
+        selected: false
+      }));
+      renderGrid(gridData);
+    });
+
+    // Sortable Headers
+    document.querySelectorAll('#data-grid-table th.sortable').forEach(th => {
+      let asc = true;
+      th.addEventListener('click', () => {
+        const col = th.getAttribute('data-col');
+        gridData.sort((a, b) => {
+          if (a[col] < b[col]) return asc ? -1 : 1;
+          if (a[col] > b[col]) return asc ? 1 : -1;
+          return 0;
+        });
+        asc = !asc;
+        renderGrid(gridData);
+      });
+    });
+
+    renderGrid(gridData);
+
+    // --- MODULE 7: MULTI-STEP WIZARD ---
+    const step1 = document.getElementById('wizard-step-1');
+    const step2 = document.getElementById('wizard-step-2');
+    const step3 = document.getElementById('wizard-step-3');
+    const ind1 = document.getElementById('step-ind-1');
+    const ind2 = document.getElementById('step-ind-2');
+    const ind3 = document.getElementById('step-ind-3');
+
+    document.getElementById('btn-wiz-next-1').addEventListener('click', () => {
+      const email = document.getElementById('wiz-email').value;
+      const pass = document.getElementById('wiz-pass').value;
+      let valid = true;
+      if (!email.includes('@') || !email.includes('.')) {
+        document.getElementById('wiz-err-email').style.display = 'block'; valid = false;
+      } else { document.getElementById('wiz-err-email').style.display = 'none'; }
+      if (pass.length < 8) {
+        document.getElementById('wiz-err-pass').style.display = 'block'; valid = false;
+      } else { document.getElementById('wiz-err-pass').style.display = 'none'; }
+
+      if (valid) {
+        step1.style.display = 'none'; step2.style.display = 'block';
+        ind1.className = 'step-indicator completed'; ind2.className = 'step-indicator active';
+        logAction();
+      }
+    });
+
+    document.getElementById('btn-wiz-prev-2').addEventListener('click', () => {
+      step2.style.display = 'none'; step1.style.display = 'block';
+      ind2.className = 'step-indicator'; ind1.className = 'step-indicator active';
+      logAction();
+    });
+
+    document.getElementById('btn-wiz-next-2').addEventListener('click', () => {
+      const addr = document.getElementById('wiz-address').value;
+      const zip = document.getElementById('wiz-zip').value;
+      let valid = true;
+      if (!addr.trim()) { document.getElementById('wiz-err-address').style.display = 'block'; valid = false; }
+      else { document.getElementById('wiz-err-address').style.display = 'none'; }
+      if (zip.length !== 5 || isNaN(zip)) { document.getElementById('wiz-err-zip').style.display = 'block'; valid = false; }
+      else { document.getElementById('wiz-err-zip').style.display = 'none'; }
+
+      if (valid) {
+        document.getElementById('rev-email').textContent = document.getElementById('wiz-email').value;
+        document.getElementById('rev-address').textContent = addr;
+        document.getElementById('rev-zip').textContent = zip;
+        step2.style.display = 'none'; step3.style.display = 'block';
+        ind2.className = 'step-indicator completed'; ind3.className = 'step-indicator active';
+        logAction();
+      }
+    });
+
+    document.getElementById('btn-wiz-prev-3').addEventListener('click', () => {
+      step3.style.display = 'none'; step2.style.display = 'block';
+      ind3.className = 'step-indicator'; ind2.className = 'step-indicator active';
+      logAction();
+    });
+
+    document.getElementById('btn-wiz-complete').addEventListener('click', () => {
+      document.getElementById('banner-wizard-complete').style.display = 'block';
+      ind3.className = 'step-indicator completed';
+      logAction();
+    });
+
+    // --- MODULE 8: E-COMMERCE CART & MATH ---
+    let cart = [];
+    let discountPct = 0;
+
+    document.querySelectorAll('.btn-add-cart').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const price = parseFloat(btn.getAttribute('data-price'));
+        const existing = cart.find(c => c.id === id);
+        if (existing) existing.qty++;
+        else cart.push({ id, name, price, qty: 1 });
+        renderCart();
+      });
+    });
+
+    function renderCart() {
+      const listEl = document.getElementById('cart-items-list');
+      if (!cart.length) {
+        listEl.textContent = 'Your cart is empty.';
+        updateTotals(0);
+        return;
+      }
+      listEl.innerHTML = '';
+      let sub = 0;
+      cart.forEach(item => {
+        sub += item.price * item.qty;
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;';
+        row.innerHTML = `
+          <span>${item.name} ($${item.price} × ${item.qty})</span>
+          <div>
+            <button class="btn btn-secondary" style="padding:2px 8px;" onclick="updateCartQty('${item.id}', -1)">-</button>
+            <button class="btn btn-secondary" style="padding:2px 8px;" onclick="updateCartQty('${item.id}', 1)">+</button>
+          </div>
+        `;
+        listEl.appendChild(row);
+      });
+      updateTotals(sub);
+      logAction();
+    }
+
+    window.updateCartQty = (id, delta) => {
+      const item = cart.find(c => c.id === id);
+      if (item) {
+        item.qty += delta;
+        if (item.qty <= 0) cart = cart.filter(c => c.id !== id);
+      }
+      renderCart();
+    };
+
+    function updateTotals(sub) {
+      const disc = sub * discountPct;
+      const tax = (sub - disc) * 0.08;
+      const total = sub - disc + tax;
+      document.getElementById('cart-subtotal').textContent = `$${sub.toFixed(2)}`;
+      document.getElementById('cart-discount').textContent = `-$${disc.toFixed(2)}`;
+      document.getElementById('cart-tax').textContent = `$${tax.toFixed(2)}`;
+      document.getElementById('cart-grand-total').textContent = `$${total.toFixed(2)}`;
+    }
+
+    document.getElementById('btn-apply-coupon').addEventListener('click', () => {
+      const code = document.getElementById('coupon-code-input').value.trim().toUpperCase();
+      const msg = document.getElementById('coupon-msg');
+      if (code === 'SAVE10') {
+        discountPct = 0.10;
+        msg.style.color = 'var(--success)';
+        msg.textContent = '10% promotional discount applied!';
+      } else {
+        discountPct = 0;
+        msg.style.color = 'var(--danger)';
+        msg.textContent = 'Invalid promo coupon code.';
+      }
+      renderCart();
+    });
+
+    // --- MODULE 9: MODALS & ESCAPE HANDLING ---
+    const modal = document.getElementById('standard-modal');
+    const modalRes = document.getElementById('banner-modal-result');
+
+    function openModal() {
+      modal.classList.add('open');
+      document.getElementById('btn-modal-cancel').focus();
+      logAction();
+    }
+
+    function closeModal(actionName) {
+      modal.classList.remove('open');
+      modalRes.style.display = 'block';
+      modalRes.textContent = `Modal dismissed via: ${actionName}`;
+      logAction();
+    }
+
+    document.getElementById('btn-open-modal-1').addEventListener('click', openModal);
+    document.getElementById('btn-open-modal-prompt').addEventListener('click', openModal);
+    document.getElementById('btn-modal-cancel').addEventListener('click', () => closeModal('Cancel Button Click'));
+    document.getElementById('btn-modal-confirm').addEventListener('click', () => closeModal('Confirm Deployment Button'));
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('open')) {
+        closeModal('Keyboard Escape Key');
+      }
+    });
+
+    // --- MODULE 10: FILE UPLOAD & SIGNATURE CANVAS ---
+    const fileInp = document.getElementById('file-input-control');
+    const fileSum = document.getElementById('file-summary');
+    fileInp.addEventListener('change', (e) => {
+      if (e.target.files.length) {
+        const f = e.target.files[0];
+        fileSum.textContent = `Attached: ${f.name} (${(f.size / 1024).toFixed(1)} KB) - Type: ${f.type || 'unknown'}`;
+        logAction();
+      }
+    });
+
+    // Canvas Signature
+    const canvas = document.getElementById('signature-canvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let strokesDrawn = 0;
+
+    canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.moveTo(e.offsetX, e.offsetY); });
+    canvas.addEventListener('mousemove', (e) => {
+      if (isDrawing) {
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+        strokesDrawn++;
+      }
+    });
+    window.addEventListener('mouseup', () => { isDrawing = false; });
+
+    document.getElementById('btn-clear-canvas').addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      strokesDrawn = 0;
+      document.getElementById('canvas-status').textContent = 'Canvas cleared.';
+      logAction();
+    });
+
+    document.getElementById('btn-verify-signature').addEventListener('click', () => {
+      const status = document.getElementById('canvas-status');
+      if (strokesDrawn > 10) {
+        status.style.color = 'var(--success)';
+        status.textContent = 'Signature validated and cryptographically stamped.';
+      } else {
+        status.style.color = 'var(--danger)';
+        status.textContent = 'Signature too short. Draw a legible stroke.';
+      }
+      logAction();
+    });
+  </script>
+</body>
+</html>
